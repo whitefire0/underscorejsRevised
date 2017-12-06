@@ -5,8 +5,9 @@
 
 (function() {
 
-  // Baseline setup
-  // --------------
+  // =======================================================================
+  // ====================== Baseline Setup =================================
+  // =======================================================================
 
   // Establish the root object, `window` (`self`) in the browser, `global`
   // on the server, or `this` in some virtual machines. We use `self`
@@ -167,8 +168,14 @@
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
 
-  // Collection Functions
-  // --------------------
+  // =======================================================================
+  // ====================== Collection Functions ===========================
+  // =======================================================================
+
+  // &****************&
+  //       _each
+  // &****************&
+
 
   // The cornerstone, an `each` implementation, aka `forEach`.
   // Handles raw objects in addition to array-likes. Treats all
