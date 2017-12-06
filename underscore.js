@@ -1,3 +1,13 @@
+/**                   __
+                  /\ \                                                         __
+ __  __    ___    \_\ \     __   _ __   ____    ___    ___   _ __    __       /\_\    ____
+/\ \/\ \ /' _ `\  /'_  \  /'__`\/\  __\/ ,__\  / ___\ / __`\/\  __\/'__`\     \/\ \  /',__\
+\ \ \_\ \/\ \/\ \/\ \ \ \/\  __/\ \ \//\__, `\/\ \__//\ \ \ \ \ \//\  __/  __  \ \ \/\__, `\
+ \ \____/\ \_\ \_\ \___,_\ \____\\ \_\\/\____/\ \____\ \____/\ \_\\ \____\/\_\ _\ \ \/\____/
+  \/___/  \/_/\/_/\/__,_ /\/____/ \/_/ \/___/  \/____/\/___/  \/_/ \/____/\/_//\ \_\ \/___/
+                                                                              \ \____/
+                                                                               \/___/ */
+
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2017 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -5,15 +15,25 @@
 
 (function() {
 
+
+
+
+
+
   // =======================================================================
   // ====================== Baseline Setup =================================
   // =======================================================================
+
+
+
+
+
 
   // Establish the root object, `window` (`self`) in the browser, `global`
   // on the server, or `this` in some virtual machines. We use `self`
   // instead of `window` for `WebWorker` support.
   var root = typeof self == 'object' && self.self === self && self ||
-            typeof global == 'object' && global.global === global && global ||
+             typeof global == 'object' && global.global === global && global ||
             this ||
             {};
 
@@ -168,33 +188,58 @@
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
 
+
+
+
+
+
   // =======================================================================
   // ====================== Collection Functions ===========================
   // =======================================================================
 
+
+
+
+
+
   // &****************&
-  //       _each
+  //       _.each (L2)
   // &****************&
 
+  /**_.each(list, iteratee, [context]) */
 
   // The cornerstone, an `each` implementation, aka `forEach`.
   // Handles raw objects in addition to array-likes. Treats all
   // sparse array-likes as if they were dense.
+  // Iterates over a list of elements, yeilding each in turn to an iteratee function
   _.each = _.forEach = function(obj, iteratee, context) {
+    //iteratee is boung to the context object if one is passed
     iteratee = optimizeCb(iteratee, context);
     var i, length;
+    //if obj is array, or array-like objects (arguments, node lists)
     if (isArrayLike(obj)) {
       for (i = 0, length = obj.length; i < length; i++) {
+        //each iteratee is clled with three arguments (element, index, list)
         iteratee(obj[i], i, obj);
       }
     } else {
+      //if obj is an object
       var keys = _.keys(obj);
       for (i = 0, length = keys.length; i < length; i++) {
         iteratee(obj[keys[i]], keys[i], obj);
       }
     }
+    //returns the list for chaining
     return obj;
   };
+
+  // &****************&
+  //       _.map (L2)
+  // &****************&
+
+  /**Produces a new array of values by mapping each value in list through a transformation function (iteratee). The iteratee is passed three arguments: the value, then the index (or key) of the iteration, and finally a reference to the entire list.
+    _.map(list, iteratee, [context]) Alias: collect 
+  */
 
   // Return the results of applying the iteratee to each element.
   _.map = _.collect = function(obj, iteratee, context) {
@@ -208,6 +253,14 @@
     }
     return results;
   };
+
+  // &****************&
+  //   _.createReduce
+  // &****************&
+
+  /**Also known as inject and foldl, reduce boils down a list of values into a single value. Memo is the initial state of the reduction, and each successive step of it should be returned by iteratee. The iteratee is passed four arguments: the memo, then the value and index (or key) of the iteration, and finally a reference to the entire list.
+
+If no memo is passed to the initial invocation of reduce, the iteratee is not invoked on the first element of the list. The first element is instead passed as the memo in the invocation of the iteratee on the next element in the list. */
 
   // Create a reducing function iterating left or right.
   var createReduce = function(dir) {
@@ -241,12 +294,26 @@
   // The right-associative version of reduce, also known as `foldr`.
   _.reduceRight = _.foldr = createReduce(-1);
 
+  // &****************&
+  //      _.find
+  // &****************&
+
+  /**_.find(list, predicate, [context]) Alias: detect 
+  Looks through each value in the list, returning the first one that passes a truth test (predicate), or undefined if no value passes the test. The function returns as soon as it finds an acceptable element, and doesn't traverse the entire list. */
+
   // Return the first value which passes a truth test. Aliased as `detect`.
   _.find = _.detect = function(obj, predicate, context) {
     var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
     var key = keyFinder(obj, predicate, context);
     if (key !== void 0 && key !== -1) return obj[key];
   };
+
+  // &****************&
+  //     _.filter
+  // &****************&
+
+  /**_.filter(list, predicate, [context]) Alias: select 
+  Looks through each value in the list, returning an array of all the values that pass a truth test (predicate). */
 
   // Return all the elements that pass a truth test.
   // Aliased as `select`.
@@ -259,10 +326,21 @@
     return results;
   };
 
+  // &****************&
+  //     _.reject
+  // &****************&
+
+  /**_.reject(list, predicate, [context]) 
+  Returns the values in list without the elements that the truth test (predicate) passes. The opposite of filter. */
+
   // Return all the elements for which a truth test fails.
   _.reject = function(obj, predicate, context) {
     return _.filter(obj, _.negate(cb(predicate)), context);
   };
+
+  // &****************&
+  //     _.every
+  // &****************&
 
   // Determine whether all of the elements match a truth test.
   // Aliased as `all`.
@@ -277,6 +355,10 @@
     return true;
   };
 
+  // &****************&
+  //     _.some
+  // &****************&
+
   // Determine if at least one element in the object matches a truth test.
   // Aliased as `any`.
   _.some = _.any = function(obj, predicate, context) {
@@ -290,6 +372,10 @@
     return false;
   };
 
+  // &****************&
+  //     _.contains
+  // &****************&
+
   // Determine if the array or object contains a given item (using `===`).
   // Aliased as `includes` and `include`.
   _.contains = _.includes = _.include = function(obj, item, fromIndex, guard) {
@@ -297,6 +383,10 @@
     if (typeof fromIndex != 'number' || guard) fromIndex = 0;
     return _.indexOf(obj, item, fromIndex) >= 0;
   };
+
+  // &****************&
+  //     _.invoke
+  // &****************&
 
   // Invoke a method (with arguments) on every item in a collection.
   _.invoke = restArgs(function(obj, path, args) {
@@ -320,6 +410,10 @@
     });
   });
 
+  // &****************&
+  //     _.pluck
+  // &****************&
+
   // Convenience version of a common use case of `map`: fetching a property.
   _.pluck = function(obj, key) {
     return _.map(obj, _.property(key));
@@ -336,6 +430,10 @@
   _.findWhere = function(obj, attrs) {
     return _.find(obj, _.matcher(attrs));
   };
+
+  // &****************&
+  //     _.max
+  // &****************&
 
   // Return the maximum element (or element-based computation).
   _.max = function(obj, iteratee, context) {
@@ -362,6 +460,10 @@
     return result;
   };
 
+  // &****************&
+  //     _.min
+  // &****************&
+
   // Return the minimum element (or element-based computation).
   _.min = function(obj, iteratee, context) {
     var result = Infinity, lastComputed = Infinity,
@@ -387,10 +489,18 @@
     return result;
   };
 
+  // &****************&
+  //     _.shuffle
+  // &****************&
+
   // Shuffle a collection.
   _.shuffle = function(obj) {
     return _.sample(obj, Infinity);
   };
+
+  // &****************&
+  //     _.sample
+  // &****************&
 
   // Sample **n** random values from a collection using the modern version of the
   // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
@@ -414,6 +524,10 @@
     return sample.slice(0, n);
   };
 
+  // &****************&
+  //     _.sortBy
+  // &****************&
+
   // Sort the object's values by a criterion produced by an iteratee.
   _.sortBy = function(obj, iteratee, context) {
     var index = 0;
@@ -435,6 +549,10 @@
     }), 'value');
   };
 
+  // &**************************&
+  //  group (helper functions)
+  // &**************************&
+
   // An internal function used for aggregate "group by" operations.
   var group = function(behavior, partition) {
     return function(obj, iteratee, context) {
@@ -448,11 +566,19 @@
     };
   };
 
+  // &****************&
+  //     _.groupBy
+  // &****************&
+
   // Groups the object's values by a criterion. Pass either a string attribute
   // to group by, or a function that returns the criterion.
   _.groupBy = group(function(result, value, key) {
     if (_.has(result, key)) result[key].push(value); else result[key] = [value];
   });
+
+  // &****************&
+  //     _.indexBy
+  // &****************&
 
   // Indexes the object's values by a criterion, similar to `groupBy`, but for
   // when you know that your index values will be unique.
@@ -460,12 +586,20 @@
     result[key] = value;
   });
 
+  // &****************&
+  //     _.countBy
+  // &****************&
+
   // Counts instances of an object that group by a certain criterion. Pass
   // either a string attribute to count by, or a function that returns the
   // criterion.
   _.countBy = group(function(result, value, key) {
     if (_.has(result, key)) result[key]++; else result[key] = 1;
   });
+
+  // &****************&
+  //     _.toArray
+  // &****************&
 
   var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
   // Safely create a real, live array from anything iterable.
@@ -480,11 +614,19 @@
     return _.values(obj);
   };
 
+  // &****************&
+  //     _.size
+  // &****************&
+
   // Return the number of elements in an object.
   _.size = function(obj) {
     if (obj == null) return 0;
     return isArrayLike(obj) ? obj.length : _.keys(obj).length;
   };
+
+  // &****************&
+  //     _.partition
+  // &****************&
 
   // Split a collection into two arrays: one whose elements all satisfy the given
   // predicate, and one whose elements all do not satisfy the predicate.
@@ -492,8 +634,23 @@
     result[pass ? 0 : 1].push(value);
   }, true);
 
-  // Array Functions
-  // ---------------
+
+
+
+
+
+  // =======================================================================
+  // =========================== Array Functions ===========================
+  // =======================================================================
+
+
+
+
+
+
+  // &****************&
+  //     _.first
+  // &****************&
 
   // Get the first element of an array. Passing **n** will return the first N
   // values in the array. Aliased as `head` and `take`. The **guard** check
@@ -504,12 +661,20 @@
     return _.initial(array, array.length - n);
   };
 
+  // &****************&
+  //     _.inital
+  // &****************&
+
   // Returns everything but the last entry of the array. Especially useful on
   // the arguments object. Passing **n** will return all the values in
   // the array, excluding the last N.
   _.initial = function(array, n, guard) {
     return slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Get the last element of an array. Passing **n** will return the last N
   // values in the array.
@@ -519,6 +684,10 @@
     return _.rest(array, Math.max(0, array.length - n));
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
   // Especially useful on the arguments object. Passing an **n** will return
   // the rest N values in the array.
@@ -526,10 +695,18 @@
     return slice.call(array, n == null || guard ? 1 : n);
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Trim out all falsy values from an array.
   _.compact = function(array) {
     return _.filter(array, Boolean);
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Internal implementation of a recursive `flatten` function.
   var flatten = function(input, shallow, strict, output) {
@@ -558,10 +735,18 @@
     return flatten(array, shallow, false);
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Return a version of the array that does not contain the specified value(s).
   _.without = restArgs(function(array, otherArrays) {
     return _.difference(array, otherArrays);
   });
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Produce a duplicate-free version of the array. If the array has already
   // been sorted, you have the option of using a faster algorithm.
@@ -596,11 +781,19 @@
     return result;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Produce an array that contains the union: each distinct element from all of
   // the passed-in arrays.
   _.union = restArgs(function(arrays) {
     return _.uniq(flatten(arrays, true, true));
   });
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Produce an array that contains every item shared between all the
   // passed-in arrays.
@@ -619,6 +812,10 @@
     return result;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = restArgs(function(array, rest) {
@@ -627,6 +824,10 @@
       return !_.contains(rest, value);
     });
   });
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Complement of _.zip. Unzip accepts an array of arrays and groups
   // each array's elements on shared indices.
@@ -639,6 +840,10 @@
     }
     return result;
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Zip together multiple lists into a single array -- elements that share
   // an index go together.
@@ -659,6 +864,10 @@
     return result;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Generator function to create the findIndex and findLastIndex functions.
   var createPredicateIndexFinder = function(dir) {
     return function(array, predicate, context) {
@@ -672,9 +881,17 @@
     };
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Returns the first index on an array-like that passes a predicate test.
   _.findIndex = createPredicateIndexFinder(1);
   _.findLastIndex = createPredicateIndexFinder(-1);
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Use a comparator function to figure out the smallest index at which
   // an object should be inserted so as to maintain order. Uses binary search.
@@ -688,6 +905,10 @@
     }
     return low;
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Generator function to create the indexOf and lastIndexOf functions.
   var createIndexFinder = function(dir, predicateFind, sortedIndex) {
@@ -714,12 +935,18 @@
     };
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Return the position of the first occurrence of an item in an array,
   // or -1 if the item is not included in the array.
   // If the array is large and already in sort order, pass `true`
   // for **isSorted** to use binary search.
   _.indexOf = createIndexFinder(1, _.findIndex, _.sortedIndex);
   _.lastIndexOf = createIndexFinder(-1, _.findLastIndex);
+
+  
 
   // Generate an integer Array containing an arithmetic progression. A port of
   // the native Python `range()` function. See
@@ -756,8 +983,19 @@
     return result;
   };
 
-  // Function (ahem) Functions
-  // ------------------
+
+
+
+
+
+  // =======================================================================
+  // ====================== Function Functions =============================
+  // =======================================================================
+
+
+
+
+
 
   // Determines whether to execute a function as a constructor
   // or a normal function with the provided arguments.
@@ -769,6 +1007,10 @@
     return self;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Create a function bound to a given object (assigning `this`, and arguments,
   // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
   // available.
@@ -779,6 +1021,10 @@
     });
     return bound;
   });
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Partially apply a function by creating a version that has had some of its
   // arguments pre-filled, without changing its dynamic `this` context. _ acts
@@ -800,6 +1046,10 @@
 
   _.partial.placeholder = _;
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Bind a number of an object's methods to that object. Remaining arguments
   // are the method names to be bound. Useful for ensuring that all callbacks
   // defined on an object belong to it.
@@ -813,6 +1063,10 @@
     }
   });
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Memoize an expensive function by storing its results.
   _.memoize = function(func, hasher) {
     var memoize = function(key) {
@@ -825,6 +1079,10 @@
     return memoize;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
   _.delay = restArgs(function(func, wait, args) {
@@ -833,9 +1091,17 @@
     }, wait);
   });
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Defers a function, scheduling it to run after the current call stack has
   // cleared.
   _.defer = _.partial(_.delay, _, 1);
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Returns a function, that, when invoked, will only be triggered at most once
   // during a given window of time. Normally, the throttled function will run
@@ -883,6 +1149,10 @@
     return throttled;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Returns a function, that, as long as it continues to be invoked, will not
   // be triggered. The function will be called after it stops being called for
   // N milliseconds. If `immediate` is passed, trigger the function on the
@@ -916,6 +1186,10 @@
     return debounced;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Returns the first function passed as an argument to the second,
   // allowing you to adjust arguments, run code before and after, and
   // conditionally execute the original function.
@@ -923,12 +1197,20 @@
     return _.partial(wrapper, func);
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Returns a negated version of the passed-in predicate.
   _.negate = function(predicate) {
     return function() {
       return !predicate.apply(this, arguments);
     };
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Returns a function that is the composition of a list of functions, each
   // consuming the return value of the function that follows.
@@ -943,6 +1225,10 @@
     };
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Returns a function that will only be executed on and after the Nth call.
   _.after = function(times, func) {
     return function() {
@@ -951,6 +1237,10 @@
       }
     };
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Returns a function that will only be executed up to (but not including) the Nth call.
   _.before = function(times, func) {
@@ -970,8 +1260,19 @@
 
   _.restArgs = restArgs;
 
-  // Object Functions
-  // ----------------
+
+
+
+
+
+  // =======================================================================
+  // ====================== Function Functions =============================
+  // =======================================================================
+
+
+
+
+
 
   // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
   var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
@@ -995,6 +1296,10 @@
     }
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Retrieve the names of an object's own properties.
   // Delegates to **ECMAScript 5**'s native `Object.keys`.
   _.keys = function(obj) {
@@ -1007,6 +1312,10 @@
     return keys;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Retrieve all the property names of an object.
   _.allKeys = function(obj) {
     if (!_.isObject(obj)) return [];
@@ -1016,6 +1325,10 @@
     if (hasEnumBug) collectNonEnumProps(obj, keys);
     return keys;
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Retrieve the values of an object's properties.
   _.values = function(obj) {
@@ -1027,6 +1340,10 @@
     }
     return values;
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Returns the results of applying the iteratee to each element of the object.
   // In contrast to _.map it returns an object.
@@ -1042,6 +1359,10 @@
     return results;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Convert an object into a list of `[key, value]` pairs.
   // The opposite of _.object.
   _.pairs = function(obj) {
@@ -1053,6 +1374,10 @@
     }
     return pairs;
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Invert the keys and values of an object. The values must be serializable.
   _.invert = function(obj) {
@@ -1093,12 +1418,24 @@
     };
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Extend a given object with all the properties in passed-in object(s).
   _.extend = createAssigner(_.allKeys);
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Assigns a given object with all the own properties in the passed-in object(s).
   // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
   _.extendOwn = _.assign = createAssigner(_.keys);
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Returns the first key on an object that passes a predicate test.
   _.findKey = function(obj, predicate, context) {
@@ -1114,6 +1451,10 @@
   var keyInObj = function(value, key, obj) {
     return key in obj;
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Return a copy of the object only containing the whitelisted properties.
   _.pick = restArgs(function(obj, keys) {
@@ -1135,6 +1476,10 @@
     return result;
   });
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Return a copy of the object without the blacklisted properties.
   _.omit = restArgs(function(obj, keys) {
     var iteratee = keys[0], context;
@@ -1150,8 +1495,16 @@
     return _.pick(obj, iteratee, context);
   });
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Fill in a given object with default properties.
   _.defaults = createAssigner(_.allKeys, true);
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Creates an object that inherits from the given prototype object.
   // If additional properties are provided then they will be added to the
@@ -1162,11 +1515,19 @@
     return result;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Create a (shallow-cloned) duplicate of an object.
   _.clone = function(obj) {
     if (!_.isObject(obj)) return obj;
     return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Invokes interceptor with the obj, and then returns obj.
   // The primary purpose of this method is to "tap into" a method chain, in
@@ -1175,6 +1536,10 @@
     interceptor(obj);
     return obj;
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Returns whether an object has a given set of `key:value` pairs.
   _.isMatch = function(object, attrs) {
@@ -1295,10 +1660,18 @@
     return true;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Perform a deep comparison to check if two objects are equal.
   _.isEqual = function(a, b) {
     return eq(a, b);
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Is a given array, string, or object empty?
   // An "empty" object has no enumerable own-properties.
@@ -1308,10 +1681,18 @@
     return _.keys(obj).length === 0;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Is a given value a DOM element?
   _.isElement = function(obj) {
     return !!(obj && obj.nodeType === 1);
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Is a given value an array?
   // Delegates to ECMA5's native Array.isArray
@@ -1319,11 +1700,19 @@
     return toString.call(obj) === '[object Array]';
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Is a given variable an object?
   _.isObject = function(obj) {
     var type = typeof obj;
     return type === 'function' || type === 'object' && !!obj;
   };
+
+  // &****************&
+  //     _.??????????
+  // &****************&
 
   // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError, isMap, isWeakMap, isSet, isWeakSet.
   _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error', 'Symbol', 'Map', 'WeakMap', 'Set', 'WeakSet'], function(name) {
@@ -1349,30 +1738,54 @@
     };
   }
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Is a given object a finite number?
   _.isFinite = function(obj) {
     return !_.isSymbol(obj) && isFinite(obj) && !isNaN(parseFloat(obj));
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Is the given value `NaN`?
   _.isNaN = function(obj) {
     return _.isNumber(obj) && isNaN(obj);
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Is a given value a boolean?
   _.isBoolean = function(obj) {
     return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Is a given value equal to null?
   _.isNull = function(obj) {
     return obj === null;
   };
 
+  // &****************&
+  //     _.
+  // &****************&
+
   // Is a given variable undefined?
   _.isUndefined = function(obj) {
     return obj === void 0;
   };
+
+  // &****************&
+  //     _.
+  // &****************&
 
   // Shortcut function for checking if an object has a given property directly
   // on itself (in other words, not on a prototype).
@@ -1391,8 +1804,21 @@
     return !!length;
   };
 
-  // Utility Functions
-  // -----------------
+  
+
+
+
+
+
+  // =======================================================================
+  // ====================== Utility Functions ==============================
+  // =======================================================================
+
+
+
+
+
+
 
   // Run Underscore.js in *noConflict* mode, returning the `_` variable to its
   // previous owner. Returns a reference to the Underscore object.
