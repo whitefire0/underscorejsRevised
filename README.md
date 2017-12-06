@@ -26,3 +26,4 @@ https://github.com/documentcloud
 
 Many thanks to our contributors:
 https://github.com/jashkenas/underscore/contributors
+"# underscorejsRevised" 
