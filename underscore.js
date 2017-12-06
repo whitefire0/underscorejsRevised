@@ -202,16 +202,23 @@
 
 
 
-  // &****************&
-  //       _.each (L2)
-  // &****************&
+  // &*************************************&
+  //       _.each
+  // &*************************************&
 
-  /**_.each(list, iteratee, [context]) */
 
-  // The cornerstone, an `each` implementation, aka `forEach`.
-  // Handles raw objects in addition to array-likes. Treats all
-  // sparse array-likes as if they were dense.
-  // Iterates over a list of elements, yeilding each in turn to an iteratee function
+  /**_.each(list, iteratee, [context]) Alias: forEach 
+      Iterates over a list of elements, yielding each in turn to an iteratee function. The iteratee is bound to the context object, if one is passed. Each invocation of iteratee is called with three arguments: (element, index, list). If list is a JavaScript object, iteratee's arguments will be (value, key, list). Returns the list for chaining.
+
+      _.each([1, 2, 3], alert);
+      => alerts each number in turn...
+      _.each({one: 1, two: 2, three: 3}, alert);
+      => alerts each number value in turn...*/
+
+  /* The cornerstone, an `each` implementation, aka `forEach`.
+  Handles raw objects in addition to array-likes. Treats all
+  sparse array-likes as if they were dense.*/
+ 
   _.each = _.forEach = function(obj, iteratee, context) {
     //iteratee is boung to the context object if one is passed
     iteratee = optimizeCb(iteratee, context);
@@ -233,15 +240,24 @@
     return obj;
   };
 
-  // &****************&
-  //       _.map (L2)
-  // &****************&
 
-  /**Produces a new array of values by mapping each value in list through a transformation function (iteratee). The iteratee is passed three arguments: the value, then the index (or key) of the iteration, and finally a reference to the entire list.
-    _.map(list, iteratee, [context]) Alias: collect 
+  // &*************************************&
+  //       _.map
+  // &*************************************&
+
+
+  /**_.map(list, iteratee, [context]) Alias: collect 
+      Produces a new array of values by mapping each value in list through a transformation function (iteratee). The iteratee is passed three arguments: the value, then the index (or key) of the iteration, and finally a reference to the entire list.
+
+      _.map([1, 2, 3], function(num){ return num * 3; });
+      => [3, 6, 9]
+      _.map({one: 1, two: 2, three: 3}, function(num, key){ return num * 3; });
+      => [3, 6, 9]
+      _.map([[1, 2], [3, 4]], _.first);
+      => [1, 3]
   */
 
-  // Return the results of applying the iteratee to each element.
+  
   _.map = _.collect = function(obj, iteratee, context) {
     iteratee = cb(iteratee, context);
     var keys = !isArrayLike(obj) && _.keys(obj),
@@ -254,13 +270,19 @@
     return results;
   };
 
-  // &****************&
+
+  // &*************************************&
   //   _.createReduce
-  // &****************&
+  // &*************************************&
 
-  /**Also known as inject and foldl, reduce boils down a list of values into a single value. Memo is the initial state of the reduction, and each successive step of it should be returned by iteratee. The iteratee is passed four arguments: the memo, then the value and index (or key) of the iteration, and finally a reference to the entire list.
 
-If no memo is passed to the initial invocation of reduce, the iteratee is not invoked on the first element of the list. The first element is instead passed as the memo in the invocation of the iteratee on the next element in the list. */
+  /**_.reduce(list, iteratee, [memo], [context]) Aliases: inject, foldl 
+      Also known as inject and foldl, reduce boils down a list of values into a single value. Memo is the initial state of the reduction, and each successive step of it should be returned by iteratee. The iteratee is passed four arguments: the memo, then the value and index (or key) of the iteration, and finally a reference to the entire list.
+
+      If no memo is passed to the initial invocation of reduce, the iteratee is not invoked on the first element of the list. The first element is instead passed as the memo in the invocation of the iteratee on the next element in the list.
+
+      var sum = _.reduce([1, 2, 3], function(memo, num){ return memo + num; }, 0);
+      => 6*/
 
   // Create a reducing function iterating left or right.
   var createReduce = function(dir) {
@@ -291,32 +313,49 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
   // or `foldl`.
   _.reduce = _.foldl = _.inject = createReduce(1);
 
+
   // The right-associative version of reduce, also known as `foldr`.
+  /**_.reduceRight(list, iteratee, [memo], [context]) Alias: foldr 
+      The right-associative version of reduce. Foldr is not as useful in JavaScript as it would be in a language with lazy evaluation.
+
+      var list = [[0, 1], [2, 3], [4, 5]];
+      var flat = _.reduceRight(list, function(a, b) { return a.concat(b); }, []);
+      => [4, 5, 2, 3, 0, 1] */
+
   _.reduceRight = _.foldr = createReduce(-1);
 
-  // &****************&
+
+  // &*************************************&
   //      _.find
-  // &****************&
+  // &*************************************&
+
 
   /**_.find(list, predicate, [context]) Alias: detect 
-  Looks through each value in the list, returning the first one that passes a truth test (predicate), or undefined if no value passes the test. The function returns as soon as it finds an acceptable element, and doesn't traverse the entire list. */
+      Looks through each value in the list, returning the first one that passes a truth test (predicate), or undefined if no value passes the test. The function returns as soon as it finds an acceptable element, and doesn't traverse the entire list.
 
-  // Return the first value which passes a truth test. Aliased as `detect`.
+      var even = _.find([1, 2, 3, 4, 5, 6], function(num){ return num % 2 == 0; });
+      => 2*/
+
+  
   _.find = _.detect = function(obj, predicate, context) {
     var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
     var key = keyFinder(obj, predicate, context);
     if (key !== void 0 && key !== -1) return obj[key];
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.filter
-  // &****************&
+  // &*************************************&
 
-  /**_.filter(list, predicate, [context]) Alias: select 
-  Looks through each value in the list, returning an array of all the values that pass a truth test (predicate). */
 
-  // Return all the elements that pass a truth test.
-  // Aliased as `select`.
+  /**.filter(list, predicate, [context]) Alias: select 
+      Looks through each value in the list, returning an array of all the values that pass a truth test (predicate).
+
+      var evens = _.filter([1, 2, 3, 4, 5, 6], function(num){ return num % 2 == 0; });
+      => [2, 4, 6] */
+
+ 
   _.filter = _.select = function(obj, predicate, context) {
     var results = [];
     predicate = cb(predicate, context);
@@ -326,24 +365,32 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return results;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.reject
-  // &****************&
+  // &*************************************&
 
   /**_.reject(list, predicate, [context]) 
-  Returns the values in list without the elements that the truth test (predicate) passes. The opposite of filter. */
+      Returns the values in list without the elements that the truth test (predicate) passes. The opposite of filter.
 
-  // Return all the elements for which a truth test fails.
+      var odds = _.reject([1, 2, 3, 4, 5, 6], function(num){ return num % 2 == 0; });
+      => [1, 3, 5]*/
+
+  
   _.reject = function(obj, predicate, context) {
     return _.filter(obj, _.negate(cb(predicate)), context);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.every
-  // &****************&
+  // &*************************************&
 
-  // Determine whether all of the elements match a truth test.
-  // Aliased as `all`.
+  /**_.every(list, [predicate], [context]) Alias: all 
+      Returns true if all of the values in the list pass the predicate truth test. Short-circuits and stops traversing the list if a false element is found.
+
+      _.every([2, 4, 5], function(num) { return num % 2 == 0; });
+      => false*/
+
+  
   _.every = _.all = function(obj, predicate, context) {
     predicate = cb(predicate, context);
     var keys = !isArrayLike(obj) && _.keys(obj),
@@ -355,12 +402,15 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return true;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.some
-  // &****************&
+  // &*************************************&
 
-  // Determine if at least one element in the object matches a truth test.
-  // Aliased as `any`.
+  /**_.some(list, [predicate], [context]) Alias: any 
+      Returns true if any of the values in the list pass the predicate truth test. Short-circuits and stops traversing the list if a true element is found.
+
+      _.some([null, 0, 'yes', false]);
+      => true */
   _.some = _.any = function(obj, predicate, context) {
     predicate = cb(predicate, context);
     var keys = !isArrayLike(obj) && _.keys(obj),
@@ -372,9 +422,17 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return false;
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.contains
-  // &****************&
+  // &*************************************&
+
+
+  /**_.contains(list, value, [fromIndex]) Alias: includes 
+      Returns true if the value is present in the list. Uses indexOf internally, if list is an Array. Use fromIndex to start your search at a given index.
+
+      _.contains([1, 2, 3], 3);
+      => true */
 
   // Determine if the array or object contains a given item (using `===`).
   // Aliased as `includes` and `include`.
@@ -384,9 +442,17 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.indexOf(obj, item, fromIndex) >= 0;
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.invoke
-  // &****************&
+  // &*************************************&
+
+
+  /**invoke_.invoke(list, methodName, *arguments) 
+    Calls the method named by methodName on each value in the list. Any extra arguments passed to invoke will be forwarded on to the method invocation.
+
+    _.invoke([[5, 1, 7], [3, 2, 1]], 'sort');
+    => [[1, 5, 7], [1, 2, 3]] */
 
   // Invoke a method (with arguments) on every item in a collection.
   _.invoke = restArgs(function(obj, path, args) {
@@ -410,9 +476,18 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     });
   });
 
-  // &****************&
+  
+  // &*************************************&
   //     _.pluck
-  // &****************&
+  // &*************************************&
+
+
+  /**_.pluck(list, propertyName) 
+      A convenient version of what is perhaps the most common use-case for map: extracting a list of property values.
+
+      var stooges = [{name: 'moe', age: 40}, {name: 'larry', age: 50}, {name: 'curly', age: 60}];
+      _.pluck(stooges, 'name');
+      => ["moe", "larry", "curly"] */
 
   // Convenience version of a common use case of `map`: fetching a property.
   _.pluck = function(obj, key) {
@@ -431,9 +506,17 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.find(obj, _.matcher(attrs));
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.max
-  // &****************&
+  // &*************************************&
+
+  /**_.max(list, [iteratee], [context]) 
+      Returns the maximum value in list. If an iteratee function is provided, it will be used on each value to generate the criterion by which the value is ranked. -Infinity is returned if list is empty, so an isEmpty guard may be required. Non-numerical values in list will be ignored.
+
+      var stooges = [{name: 'moe', age: 40}, {name: 'larry', age: 50}, {name: 'curly', age: 60}];
+      _.max(stooges, function(stooge){ return stooge.age; });
+      => {name: 'curly', age: 60}; */
 
   // Return the maximum element (or element-based computation).
   _.max = function(obj, iteratee, context) {
@@ -460,9 +543,17 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return result;
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.min
-  // &****************&
+  // &*************************************&
+
+  /**.min(list, [iteratee], [context]) 
+      Returns the minimum value in list. If an iteratee function is provided, it will be used on each value to generate the criterion by which the value is ranked. Infinity is returned if list is empty, so an isEmpty guard may be required. Non-numerical values in list will be ignored.
+
+      var numbers = [10, 5, 100, 2, 1000];
+      _.min(numbers);
+      => 2 */
 
   // Return the minimum element (or element-based computation).
   _.min = function(obj, iteratee, context) {
@@ -489,18 +580,36 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return result;
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.shuffle
-  // &****************&
+  // &*************************************&
+
+  /**_.shuffle(list) 
+      Returns a shuffled copy of the list, using a version of the Fisher-Yates shuffle.
+
+      _.shuffle([1, 2, 3, 4, 5, 6]);
+      => [4, 1, 6, 3, 5, 2] */
 
   // Shuffle a collection.
   _.shuffle = function(obj) {
     return _.sample(obj, Infinity);
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.sample
-  // &****************&
+  // &*************************************&
+
+
+  /**_.sample(list, [n]) 
+      Produce a random sample from the list. Pass a number to return n random elements from the list. Otherwise a single random item will be returned.
+
+      _.sample([1, 2, 3, 4, 5, 6]);
+      => 4
+
+      _.sample([1, 2, 3, 4, 5, 6], 3);
+      => [1, 6, 2] */
 
   // Sample **n** random values from a collection using the modern version of the
   // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
@@ -524,9 +633,21 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return sample.slice(0, n);
   };
 
-  // &****************&
+  
+  // &*************************************&
   //     _.sortBy
-  // &****************&
+  // &*************************************&
+
+
+  /**_.sortBy(list, iteratee, [context]) 
+      Returns a (stably) sorted copy of list, ranked in ascending order by the results of running each value through iteratee. iteratee may also be the string name of the property to sort by (eg. length).
+
+      _.sortBy([1, 2, 3, 4, 5, 6], function(num){ return Math.sin(num); });
+      => [5, 4, 6, 3, 1, 2]
+
+      var stooges = [{name: 'moe', age: 40}, {name: 'larry', age: 50}, {name: 'curly', age: 60}];
+      _.sortBy(stooges, 'name');
+      => [{name: 'curly', age: 60}, {name: 'larry', age: 50}, {name: 'moe', age: 40}]; */
 
   // Sort the object's values by a criterion produced by an iteratee.
   _.sortBy = function(obj, iteratee, context) {
@@ -566,9 +687,19 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.groupBy
-  // &****************&
+  // &*************************************&
+
+  /**_.groupBy(list, iteratee, [context]) 
+      Splits a collection into sets, grouped by the result of running each value through iteratee. If iteratee is a string instead of a function, groups by the property named by iteratee on each of the values.
+
+      _.groupBy([1.3, 2.1, 2.4], function(num){ return Math.floor(num); });
+      => {1: [1.3], 2: [2.1, 2.4]}
+
+      _.groupBy(['one', 'two', 'three'], 'length');
+      => {3: ["one", "two"], 5: ["three"]} */
 
   // Groups the object's values by a criterion. Pass either a string attribute
   // to group by, or a function that returns the criterion.
@@ -576,9 +707,21 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     if (_.has(result, key)) result[key].push(value); else result[key] = [value];
   });
 
-  // &****************&
+
+  // &*************************************&
   //     _.indexBy
-  // &****************&
+  // &*************************************&
+
+  /**_.indexBy(list, iteratee, [context]) 
+      Given a list, and an iteratee function that returns a key for each element in the list (or a property name), returns an object with an index of each item. Just like groupBy, but for when you know your keys are unique.
+
+      var stooges = [{name: 'moe', age: 40}, {name: 'larry', age: 50}, {name: 'curly', age: 60}];
+      _.indexBy(stooges, 'age');
+      => {
+        "40": {name: 'moe', age: 40},
+        "50": {name: 'larry', age: 50},
+        "60": {name: 'curly', age: 60}
+      } */
 
   // Indexes the object's values by a criterion, similar to `groupBy`, but for
   // when you know that your index values will be unique.
@@ -586,9 +729,18 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     result[key] = value;
   });
 
-  // &****************&
+
+  // &*************************************&
   //     _.countBy
-  // &****************&
+  // &*************************************&
+
+  /**_.countBy(list, iteratee, [context]) 
+      Sorts a list into groups and returns a count for the number of objects in each group. Similar to groupBy, but instead of returning a list of values, returns a count for the number of values in that group.
+
+      _.countBy([1, 2, 3, 4, 5], function(num) {
+        return num % 2 == 0 ? 'even': 'odd';
+      });
+      => {odd: 3, even: 2} */
 
   // Counts instances of an object that group by a certain criterion. Pass
   // either a string attribute to count by, or a function that returns the
@@ -597,9 +749,16 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     if (_.has(result, key)) result[key]++; else result[key] = 1;
   });
 
-  // &****************&
+
+  // &*************************************&
   //     _.toArray
-  // &****************&
+  // &*************************************&
+
+  /**_.toArray(list) 
+      Creates a real Array from the list (anything that can be iterated over). Useful for transmuting the arguments object.
+
+      (function(){ return _.toArray(arguments).slice(1); })(1, 2, 3, 4);
+      => [2, 3, 4] */
 
   var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
   // Safely create a real, live array from anything iterable.
@@ -614,9 +773,16 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.values(obj);
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.size
-  // &****************&
+  // &*************************************&
+
+  /**_.size(list) 
+      Return the number of values in the list.
+
+      _.size({one: 1, two: 2, three: 3});
+      => 3 */
 
   // Return the number of elements in an object.
   _.size = function(obj) {
@@ -624,9 +790,16 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return isArrayLike(obj) ? obj.length : _.keys(obj).length;
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.partition
-  // &****************&
+  // &*************************************&
+
+  /**_.partition(array, predicate) 
+      Split array into two arrays: one whose elements all satisfy predicate and one whose elements all do not satisfy predicate.
+
+      _.partition([0, 1, 2, 3, 4, 5], isOdd);
+      => [[1, 3, 5], [0, 2, 4]] */
 
   // Split a collection into two arrays: one whose elements all satisfy the given
   // predicate, and one whose elements all do not satisfy the predicate.
@@ -648,9 +821,15 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
 
 
 
-  // &****************&
+  // &*************************************&
   //     _.first
-  // &****************&
+  // &*************************************&
+
+  /**_.first(array, [n]) Aliases: head, take 
+      Returns the first element of an array. Passing n will return the first n elements of the array.
+
+      _.first([5, 4, 3, 2, 1]);
+      => 5 */
 
   // Get the first element of an array. Passing **n** will return the first N
   // values in the array. Aliased as `head` and `take`. The **guard** check
@@ -661,9 +840,17 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.initial(array, array.length - n);
   };
 
-  // &****************&
+
+  // &*************************************&
   //     _.inital
-  // &****************&
+  // &*************************************&
+
+
+  /**_.initial(array, [n]) 
+      Returns everything but the last entry of the array. Especially useful on the arguments object. Pass n to exclude the last n elements from the result.
+
+      _.initial([5, 4, 3, 2, 1]);
+      => [5, 4, 3, 2] */
 
   // Returns everything but the last entry of the array. Especially useful on
   // the arguments object. Passing **n** will return all the values in
@@ -672,9 +859,16 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
   };
 
-  // &****************&
-  //     _.
-  // &****************&
+
+  // &*************************************&
+  //     _.last
+  // &*************************************&
+
+  /**_.last(array, [n]) 
+      Returns the last element of an array. Passing n will return the last n elements of the array.
+
+      _.last([5, 4, 3, 2, 1]);
+      => 1 */
 
   // Get the last element of an array. Passing **n** will return the last N
   // values in the array.
@@ -684,9 +878,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.rest(array, Math.max(0, array.length - n));
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
   // Especially useful on the arguments object. Passing an **n** will return
@@ -695,18 +889,18 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return slice.call(array, n == null || guard ? 1 : n);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Trim out all falsy values from an array.
   _.compact = function(array) {
     return _.filter(array, Boolean);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Internal implementation of a recursive `flatten` function.
   var flatten = function(input, shallow, strict, output) {
@@ -735,18 +929,18 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return flatten(array, shallow, false);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Return a version of the array that does not contain the specified value(s).
   _.without = restArgs(function(array, otherArrays) {
     return _.difference(array, otherArrays);
   });
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Produce a duplicate-free version of the array. If the array has already
   // been sorted, you have the option of using a faster algorithm.
@@ -781,9 +975,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return result;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Produce an array that contains the union: each distinct element from all of
   // the passed-in arrays.
@@ -791,9 +985,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.uniq(flatten(arrays, true, true));
   });
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Produce an array that contains every item shared between all the
   // passed-in arrays.
@@ -812,9 +1006,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return result;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
@@ -825,9 +1019,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     });
   });
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Complement of _.zip. Unzip accepts an array of arrays and groups
   // each array's elements on shared indices.
@@ -841,9 +1035,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return result;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Zip together multiple lists into a single array -- elements that share
   // an index go together.
@@ -864,9 +1058,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return result;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Generator function to create the findIndex and findLastIndex functions.
   var createPredicateIndexFinder = function(dir) {
@@ -881,17 +1075,17 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns the first index on an array-like that passes a predicate test.
   _.findIndex = createPredicateIndexFinder(1);
   _.findLastIndex = createPredicateIndexFinder(-1);
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Use a comparator function to figure out the smallest index at which
   // an object should be inserted so as to maintain order. Uses binary search.
@@ -906,9 +1100,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return low;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Generator function to create the indexOf and lastIndexOf functions.
   var createIndexFinder = function(dir, predicateFind, sortedIndex) {
@@ -935,9 +1129,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Return the position of the first occurrence of an item in an array,
   // or -1 if the item is not included in the array.
@@ -1007,9 +1201,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return self;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Create a function bound to a given object (assigning `this`, and arguments,
   // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
@@ -1022,9 +1216,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return bound;
   });
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Partially apply a function by creating a version that has had some of its
   // arguments pre-filled, without changing its dynamic `this` context. _ acts
@@ -1046,9 +1240,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
 
   _.partial.placeholder = _;
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Bind a number of an object's methods to that object. Remaining arguments
   // are the method names to be bound. Useful for ensuring that all callbacks
@@ -1063,9 +1257,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     }
   });
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Memoize an expensive function by storing its results.
   _.memoize = function(func, hasher) {
@@ -1079,9 +1273,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return memoize;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
@@ -1091,17 +1285,17 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     }, wait);
   });
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Defers a function, scheduling it to run after the current call stack has
   // cleared.
   _.defer = _.partial(_.delay, _, 1);
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns a function, that, when invoked, will only be triggered at most once
   // during a given window of time. Normally, the throttled function will run
@@ -1149,9 +1343,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return throttled;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns a function, that, as long as it continues to be invoked, will not
   // be triggered. The function will be called after it stops being called for
@@ -1186,9 +1380,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return debounced;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns the first function passed as an argument to the second,
   // allowing you to adjust arguments, run code before and after, and
@@ -1197,9 +1391,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.partial(wrapper, func);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns a negated version of the passed-in predicate.
   _.negate = function(predicate) {
@@ -1208,9 +1402,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns a function that is the composition of a list of functions, each
   // consuming the return value of the function that follows.
@@ -1225,9 +1419,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns a function that will only be executed on and after the Nth call.
   _.after = function(times, func) {
@@ -1238,9 +1432,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns a function that will only be executed up to (but not including) the Nth call.
   _.before = function(times, func) {
@@ -1296,9 +1490,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     }
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Retrieve the names of an object's own properties.
   // Delegates to **ECMAScript 5**'s native `Object.keys`.
@@ -1312,9 +1506,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return keys;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Retrieve all the property names of an object.
   _.allKeys = function(obj) {
@@ -1326,9 +1520,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return keys;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Retrieve the values of an object's properties.
   _.values = function(obj) {
@@ -1341,9 +1535,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return values;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns the results of applying the iteratee to each element of the object.
   // In contrast to _.map it returns an object.
@@ -1359,9 +1553,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return results;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Convert an object into a list of `[key, value]` pairs.
   // The opposite of _.object.
@@ -1375,9 +1569,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return pairs;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Invert the keys and values of an object. The values must be serializable.
   _.invert = function(obj) {
@@ -1418,24 +1612,24 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Extend a given object with all the properties in passed-in object(s).
   _.extend = createAssigner(_.allKeys);
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Assigns a given object with all the own properties in the passed-in object(s).
   // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
   _.extendOwn = _.assign = createAssigner(_.keys);
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns the first key on an object that passes a predicate test.
   _.findKey = function(obj, predicate, context) {
@@ -1452,9 +1646,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return key in obj;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Return a copy of the object only containing the whitelisted properties.
   _.pick = restArgs(function(obj, keys) {
@@ -1476,9 +1670,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return result;
   });
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Return a copy of the object without the blacklisted properties.
   _.omit = restArgs(function(obj, keys) {
@@ -1495,16 +1689,16 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.pick(obj, iteratee, context);
   });
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Fill in a given object with default properties.
   _.defaults = createAssigner(_.allKeys, true);
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Creates an object that inherits from the given prototype object.
   // If additional properties are provided then they will be added to the
@@ -1515,9 +1709,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return result;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Create a (shallow-cloned) duplicate of an object.
   _.clone = function(obj) {
@@ -1525,9 +1719,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Invokes interceptor with the obj, and then returns obj.
   // The primary purpose of this method is to "tap into" a method chain, in
@@ -1537,9 +1731,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return obj;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Returns whether an object has a given set of `key:value` pairs.
   _.isMatch = function(object, attrs) {
@@ -1660,18 +1854,18 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return true;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Perform a deep comparison to check if two objects are equal.
   _.isEqual = function(a, b) {
     return eq(a, b);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is a given array, string, or object empty?
   // An "empty" object has no enumerable own-properties.
@@ -1681,18 +1875,18 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return _.keys(obj).length === 0;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is a given value a DOM element?
   _.isElement = function(obj) {
     return !!(obj && obj.nodeType === 1);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is a given value an array?
   // Delegates to ECMA5's native Array.isArray
@@ -1700,9 +1894,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return toString.call(obj) === '[object Array]';
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is a given variable an object?
   _.isObject = function(obj) {
@@ -1710,9 +1904,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return type === 'function' || type === 'object' && !!obj;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.??????????
-  // &****************&
+  // &*************************************&
 
   // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError, isMap, isWeakMap, isSet, isWeakSet.
   _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error', 'Symbol', 'Map', 'WeakMap', 'Set', 'WeakSet'], function(name) {
@@ -1738,54 +1932,54 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   }
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is a given object a finite number?
   _.isFinite = function(obj) {
     return !_.isSymbol(obj) && isFinite(obj) && !isNaN(parseFloat(obj));
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is the given value `NaN`?
   _.isNaN = function(obj) {
     return _.isNumber(obj) && isNaN(obj);
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is a given value a boolean?
   _.isBoolean = function(obj) {
     return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is a given value equal to null?
   _.isNull = function(obj) {
     return obj === null;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Is a given variable undefined?
   _.isUndefined = function(obj) {
     return obj === void 0;
   };
 
-  // &****************&
+  // &*************************************&
   //     _.
-  // &****************&
+  // &*************************************&
 
   // Shortcut function for checking if an object has a given property directly
   // on itself (in other words, not on a prototype).
@@ -1818,7 +2012,9 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
 
 
 
-
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // Run Underscore.js in *noConflict* mode, returning the `_` variable to its
   // previous owner. Returns a reference to the Underscore object.
@@ -1827,10 +2023,18 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return this;
   };
 
+  // &*************************************&
+  //     _.
+  // &*************************************&
+
   // Keep the identity function around for default iteratees.
   _.identity = function(value) {
     return value;
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // Predicate-generating functions. Often useful outside of Underscore.
   _.constant = function(value) {
@@ -1838,6 +2042,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
       return value;
     };
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   _.noop = function(){};
 
@@ -1849,6 +2057,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
       return deepGet(obj, path);
     };
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // Generates a function for a given object that returns a given property.
   _.propertyOf = function(obj) {
@@ -1869,6 +2081,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     };
   };
 
+  // &*************************************&
+  //     _.
+  // &*************************************&
+
   // Run a function **n** times.
   _.times = function(n, iteratee, context) {
     var accum = Array(Math.max(0, n));
@@ -1876,6 +2092,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     for (var i = 0; i < n; i++) accum[i] = iteratee(i);
     return accum;
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // Return a random integer between min and max (inclusive).
   _.random = function(min, max) {
@@ -1885,6 +2105,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     }
     return min + Math.floor(Math.random() * (max - min + 1));
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // A (possibly faster) way to get the current timestamp as an integer.
   _.now = Date.now || function() {
@@ -1916,8 +2140,20 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
       return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
     };
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
   _.escape = createEscaper(escapeMap);
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
   _.unescape = createEscaper(unescapeMap);
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // Traverses the children of `obj` along `path`. If a child is a function, it
   // is invoked with its parent as context. Returns the value of the final
@@ -1938,6 +2174,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     }
     return obj;
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // Generate a unique integer id (unique within the entire client session).
   // Useful for temporary DOM ids.
@@ -1976,6 +2216,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
   var escapeChar = function(match) {
     return '\\' + escapes[match];
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // JavaScript micro-templating, similar to John Resig's implementation.
   // Underscore templating handles arbitrary delimiters, preserves whitespace,
@@ -2038,6 +2282,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return template;
   };
 
+  // &*************************************&
+  //     _.
+  // &*************************************&
+
   // Add a "chain" function. Start chaining a wrapped Underscore object.
   _.chain = function(obj) {
     var instance = _(obj);
@@ -2045,8 +2293,18 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
     return instance;
   };
 
-  // OOP
-  // ---------------
+
+
+
+
+  // =======================================================================
+  // ====================== OOP ============================================
+  // =======================================================================
+
+
+
+
+
   // If Underscore is called as a function, it returns a wrapped object that
   // can be used OO-style. This wrapper holds altered versions of all the
   // underscore functions. Wrapped objects may be chained.
@@ -2055,6 +2313,10 @@ If no memo is passed to the initial invocation of reduce, the iteratee is not in
   var chainResult = function(instance, obj) {
     return instance._chain ? _(obj).chain() : obj;
   };
+
+  // &*************************************&
+  //     _.
+  // &*************************************&
 
   // Add your own custom functions to the Underscore object.
   _.mixin = function(obj) {
