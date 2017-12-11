@@ -13,6 +13,12 @@
 //     (c) 2009-2017 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 //     Underscore may be freely distributed under the MIT license.
 
+/**Look for functions with the least dependencies, the least helper functions, and the least things that you don't know. You are looking for relative complexity, as the first time you run through it you might not understand any of it.
+ * When you see a function that is dependent on another functions, its probably because it uses this helper function in many over cases. Abstract it to that case alone - a helper function that has 10 different scenarios has 9 scenarios that are essentially dead at this point. Trust that you don't know them and you will encounter them sequentially through actual usage. If you don't use this process reading this level of approach is literally impossible.
+ */
+
+ // Number of 
+
 (function() {
 
 
@@ -86,8 +92,11 @@
   // Internal function that returns an efficient (for current engines) version
   // of the passed-in callback, to be repeatedly applied in other Underscore
   // functions.
+
+  //where 'context' = 'this' object pointer
+  // 'optimizeCallback'
   var optimizeCb = function(func, context, argCount) {
-    if (context === void 0) return func;
+    if (context === void 0) return func; 
     switch (argCount) {
       case 1: return function(value) {
         return func.call(context, value);
@@ -96,6 +105,7 @@
       // made use of it.
       case null:
       case 3: return function(value, index, collection) {
+        //function.call(thisArg, arg1, arg2, ...)
         return func.call(context, value, index, collection);
       };
       case 4: return function(accumulator, value, index, collection) {
@@ -162,6 +172,8 @@
     return result;
   };
 
+  //shallowProperty is a helper function with multiple uses:
+  //Case 1: isArrayLike(obj) => getLength = shallowProperty('length') => getLength(collection /**where collection is array */), in this case key param = 'length'
   var shallowProperty = function(key) {
     return function(obj) {
       return obj == null ? void 0 : obj[key];
@@ -181,10 +193,17 @@
   // should be iterated as an array or as an object.
   // Related: http://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
   // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
-  var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+
+  //math.pow(base, exponent)
+  //changed exponent to be 32 due to changes in ECMA2017
+  // https://github.com/jashkenas/underscore/pull/2703
+  var MAX_ARRAY_INDEX = Math.pow(2, 32) - 1;
   var getLength = shallowProperty('length');
+  //isArrayLike is a function that takes another function
   var isArrayLike = function(collection) {
+    //inside that function, getLength already has 'key' defined, and then collection param is passed into the return function inside getLength (function(obj))
     var length = getLength(collection);
+    //returns true if 3 conditions for determining an array are true
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
 
@@ -218,9 +237,43 @@
   /* The cornerstone, an `each` implementation, aka `forEach`.
   Handles raw objects in addition to array-likes. Treats all
   sparse array-likes as if they were dense.*/
+
+  // Unfamiliar Concepts: (2 -iterating over keys, context), # Helper Functions: (4), # of Dependencies: ()
  
+  /** Test Functions */
+
+  _.printedIteratee = function printedIteratee (element, index, array){
+    console.log('Element: ' + element);
+    console.log('Index: ' + index);
+    console.log('Array: ' + array);
+  };
+
+  _.speak = function speak (element) {
+    console.log(element);
+  }
+
+  /** Test data types */
+
+  _.simpleNumberArray = [1, 2, 3]
+  _.simpleStringArray = ['this', 'is', 'a', 'test', 'array', 'of', 'strings'];
+  _.simpleNestedNumberArray = [[1], [2], [3], [4]];
+  _.complexNestedArray = [[{cars: 'go vroom vroom', cats: 'go meow meow fuck you human'}], ['types of cat', ['twat', 'twat', 'twat']]];
+  _.computerObject = {
+    components: {
+      peripherals: ['keyboard', 'mouse', 'printer', 'monitor'],
+      core: ['motherboard, cpu, gpu']
+    },
+    types: {
+      old: {nonWindows: 'atari', Windows: 'windows95'},
+      notOld: {nonWindows: 'iMac', Windows: 'windows Vista'},
+      worthBuying: {nonWindows: 'macbook', Windows: 'windows 10'}
+    }
+  }
+
+
   _.each = _.forEach = function(obj, iteratee, context) {
-    //iteratee is boung to the context object if one is passed
+    //iteratee is bound to the context object if one is passed
+    //iteratee now stores a function: interatee.apply(context, arguments)
     iteratee = optimizeCb(iteratee, context);
     var i, length;
     //if obj is array, or array-like objects (arguments, node lists)
@@ -257,6 +310,7 @@
       => [1, 3]
   */
 
+   // Unfamiliar Concepts: (0), # Helper Functions: (4), # of Dependencies: ()
   
   _.map = _.collect = function(obj, iteratee, context) {
     iteratee = cb(iteratee, context);
@@ -283,6 +337,8 @@
 
       var sum = _.reduce([1, 2, 3], function(memo, num){ return memo + num; }, 0);
       => 6*/
+
+  // Unfamiliar Concepts: (1) + recursion, # Helper Functions: (5), # of Dependencies: ()
 
   // Create a reducing function iterating left or right.
   var createReduce = function(dir) {
@@ -336,6 +392,8 @@
       var even = _.find([1, 2, 3, 4, 5, 6], function(num){ return num % 2 == 0; });
       => 2*/
 
+    // Unfamiliar Concepts: (1), # Helper Functions: (2), # of Dependencies: ()
+
   
   _.find = _.detect = function(obj, predicate, context) {
     var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
@@ -355,6 +413,7 @@
       var evens = _.filter([1, 2, 3, 4, 5, 6], function(num){ return num % 2 == 0; });
       => [2, 4, 6] */
 
+    // Unfamiliar Concepts: (1), # Helper Functions: (3), # of Dependencies: ()
  
   _.filter = _.select = function(obj, predicate, context) {
     var results = [];
@@ -2999,4 +3058,5 @@
       return _;
     });
   }
+
 }());
