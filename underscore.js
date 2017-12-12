@@ -95,6 +95,7 @@
 
   //where 'context' = 'this' object pointer
   // 'optimizeCallback'
+  // called with (iteratee, context) from _.each
   var optimizeCb = function(func, context, argCount) {
     if (context === void 0) return func; 
     switch (argCount) {
@@ -174,8 +175,14 @@
 
   //shallowProperty is a helper function with multiple uses:
   //Case 1: isArrayLike(obj) => getLength = shallowProperty('length') => getLength(collection /**where collection is array */), in this case key param = 'length'
+  
+  //nested function that allows both key and obj to be defined and processed
+  //'key' is the method or property of the object that we want to return
   var shallowProperty = function(key) {
+    //we have to create function that passes in obj as otherwise obj is not defined
     return function(obj) {
+      //if obj is null return undefined, else return the object[key]
+      //a true object does not have a length property and so returns undefined
       return obj == null ? void 0 : obj[key];
     };
   };
@@ -200,14 +207,30 @@
   var MAX_ARRAY_INDEX = Math.pow(2, 32) - 1;
   var getLength = shallowProperty('length');
   //isArrayLike is a function that takes another function
+
+  //when called by _.each (specific refactor)
+  // var isArrayLike(obj) {
+  //   var length = shallowProperty('length') {
+  //     return function(obj) {
+  //       // returns true if arrayLike
+  //       return obj == null ? void 0 : obj['length'];
+  //     }
+  //   }
+  //   returns true if 3 conditions for determining an array are true
+  //   return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
+  // }
+    
+
   var isArrayLike = function(collection) {
-    //inside that function, getLength already has 'key' defined, and then collection param is passed into the return function inside getLength (function(obj))
+    //inside this function, getLength already has 'key' defined (js: 207). By passing in collection to getLength, javascript passes this param to the nested function, not the originally defined function:     
+
     var length = getLength(collection);
     //returns true if 3 conditions for determining an array are true
+    //typeof length == 'number' equivalent to Number(length)
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
 
-
+ 
 
 
 
@@ -248,7 +271,7 @@
     console.log('Array: ' + array);
   };
 
-  _.speak = function speak (element) {
+  _.logThis = function logThis (element) {
     console.log(element);
   }
 
@@ -258,6 +281,7 @@
   _.simpleStringArray = ['this', 'is', 'a', 'test', 'array', 'of', 'strings'];
   _.simpleNestedNumberArray = [[1], [2], [3], [4]];
   _.complexNestedArray = [[{cars: 'go vroom vroom', cats: 'go meow meow fuck you human'}], ['types of cat', ['twat', 'twat', 'twat']]];
+  _.simpleObject = {simple: 'simples'};
   _.computerObject = {
     components: {
       peripherals: ['keyboard', 'mouse', 'printer', 'monitor'],
@@ -280,6 +304,7 @@
     if (isArrayLike(obj)) {
       for (i = 0, length = obj.length; i < length; i++) {
         //each iteratee is clled with three arguments (element, index, list)
+        //when iteratee is now called we enter the local scope of optimizeCb (function(){return func.apply(context arguments)})
         iteratee(obj[i], i, obj);
       }
     } else {
@@ -2380,6 +2405,7 @@
 
   _.isObject = function(obj) {
     var type = typeof obj;
+    //!!obj converts a non-boolean into an boolean and then boolean-inverts it - ie if obj exists, convert to false and then invert to true.
     return type === 'function' || type === 'object' && !!obj;
   };
 
