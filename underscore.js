@@ -96,7 +96,9 @@
   //where 'context' = 'this' object pointer
   // 'optimizeCallback'
   // called with (iteratee, context) from _.each
+  // argCount param must come from functions excluding _.each
   var optimizeCb = function(func, context, argCount) {
+    //no need to wrap the returning function here as the return value is an object, i.e. func != func.apply()
     if (context === void 0) return func; 
     switch (argCount) {
       case 1: return function(value) {
@@ -113,6 +115,7 @@
         return func.call(context, accumulator, value, index, collection);
       };
     }
+    //why do we have to return a function() wrapper? if we don't, we immediately call func.apply() as the return value. Wrapping this in a function allows us to return an executable value in var iteratee
     return function() {
       return func.apply(context, arguments);
     };
@@ -123,8 +126,12 @@
   // An internal function to generate callbacks that can be applied to each
   // element in a collection, returning the desired result — either `identity`,
   // an arbitrary callback, a property matcher, or a property accessor.
+
+  //uses a series of if(condition) return func statements (like a flexible switch?)
   var cb = function(value, context, argCount) {
+    //if _.iteratee has been user modified, do something (reset to default?)
     if (_.iteratee !== builtinIteratee) return _.iteratee(value, context);
+    //where value is passed in function, if not call _.identity and return value
     if (value == null) return _.identity;
     if (_.isFunction(value)) return optimizeCb(value, context, argCount);
     if (_.isObject(value) && !_.isArray(value)) return _.matcher(value);
@@ -208,19 +215,6 @@
   var getLength = shallowProperty('length');
   //isArrayLike is a function that takes another function
 
-  //when called by _.each (specific refactor)
-  // var isArrayLike(obj) {
-  //   var length = shallowProperty('length') {
-  //     return function(obj) {
-  //       // returns true if arrayLike
-  //       return obj == null ? void 0 : obj['length'];
-  //     }
-  //   }
-  //   returns true if 3 conditions for determining an array are true
-  //   return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
-  // }
-    
-
   var isArrayLike = function(collection) {
     //inside this function, getLength already has 'key' defined (js: 207). By passing in collection to getLength, javascript passes this param to the nested function, not the originally defined function:     
 
@@ -265,23 +259,31 @@
  
   /** Test Functions */
 
-  _.printedIteratee = function printedIteratee (element, index, array){
-    console.log('Element: ' + element);
-    console.log('Index: ' + index);
-    console.log('Array: ' + array);
-  };
-
-  _.logThis = function logThis (element) {
+  _.logThis = function logThis(element) {
     console.log(element);
   }
 
-  /** Test data types */
+  _.adder = function adder(a, b) {
+    return a + b;
+  }
+
+  _.alerts = function alert(element) {
+    alert(element);
+  }
+
+  /** Test data types 
 
   _.simpleNumberArray = [1, 2, 3]
-  _.simpleStringArray = ['this', 'is', 'a', 'test', 'array', 'of', 'strings'];
-  _.simpleNestedNumberArray = [[1], [2], [3], [4]];
-  _.complexNestedArray = [[{cars: 'go vroom vroom', cats: 'go meow meow fuck you human'}], ['types of cat', ['twat', 'twat', 'twat']]];
+  _.simpleStringArray = ['this', 'is', 'a', 'test'];
+  _.simpleNestedNumberArray = [[1], [2], [3]];
+  _.arrayWithObject = [1, 2, {simple: 'simples'}]
+  _.arrayOfFunctions = [function func1(){ return 'func1'}, function func2(){ return 'func2'}, function func3(){ return 'func3'}]
   _.simpleObject = {simple: 'simples'};
+  _.tripleObject = {
+      USA: 'trumps',
+      UK: 'mays',
+      GER: 'gerks'
+  };
   _.computerObject = {
     components: {
       peripherals: ['keyboard', 'mouse', 'printer', 'monitor'],
@@ -294,6 +296,7 @@
     }
   }
 
+  */
 
   _.each = _.forEach = function(obj, iteratee, context) {
     //iteratee is bound to the context object if one is passed
@@ -309,8 +312,10 @@
       }
     } else {
       //if obj is an object
+      // make an array of object key names (in string form)
       var keys = _.keys(obj);
       for (i = 0, length = keys.length; i < length; i++) {
+        //eg iteratee(_.computerObject['components'])
         iteratee(obj[keys[i]], keys[i], obj);
       }
     }
@@ -335,15 +340,24 @@
       => [1, 3]
   */
 
-   // Unfamiliar Concepts: (0), # Helper Functions: (4), # of Dependencies: ()
+   // Unfamiliar Concepts: (4), # Helper Functions: (4)
   
   _.map = _.collect = function(obj, iteratee, context) {
+    // cb() returns optimised callbacks based on the type of element it receives
     iteratee = cb(iteratee, context);
+    //if object, isArrayLike(obj) returns false which is then inversed to true && _.keys(obj) returns the object keys. Due to there being only a single operand ==> var keys = array of object key names (The Logical AND operator (&&), will return the value of the second operand if the first is truthy)
+    //if array, isArrayLike(obj) returns true which is then inversed to false && _.keys(obj) does not get executed ==> var keys = false.
     var keys = !isArrayLike(obj) && _.keys(obj),
+    //if keys is false, length = obj.length
+    //if keys is obj.keys, then both keys/obj have the same length, and so length = keys.length
         length = (keys || obj).length,
+        //create array of keys/obj length
         results = Array(length);
     for (var index = 0; index < length; index++) {
+      //if array, currentKey becomes index value of for loop
+      //if object, currentKey becomes keys[index]
       var currentKey = keys ? keys[index] : index;
+      //execute callback and store value in results array iteratively
       results[index] = iteratee(obj[currentKey], currentKey, obj);
     }
     return results;
