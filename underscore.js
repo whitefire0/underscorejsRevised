@@ -358,6 +358,7 @@
       //if object, currentKey becomes keys[index]
       var currentKey = keys ? keys[index] : index;
       //execute callback and store value in results array iteratively
+      //if object, we are passing in value, currentKey and obj
       results[index] = iteratee(obj[currentKey], currentKey, obj);
     }
     return results;
@@ -377,12 +378,14 @@
       var sum = _.reduce([1, 2, 3], function(memo, num){ return memo + num; }, 0);
       => 6*/
 
-  // Unfamiliar Concepts: (1) + recursion, # Helper Functions: (5), # of Dependencies: ()
+  // Unfamiliar Concepts: (1) + recursion, # Helper Functions: (5),
 
   // Create a reducing function iterating left or right.
   var createReduce = function(dir) {
     // Wrap code that reassigns argument variables in a separate function than
     // the one that accesses `arguments.length` to avoid a perf hit. (#1991)
+
+    // as reducer function is stored in a variable, when createReduce(dir) is called, it first executes line 404
     var reducer = function(obj, iteratee, memo, initial) {
       var keys = !isArrayLike(obj) && _.keys(obj),
           length = (keys || obj).length,
@@ -399,6 +402,7 @@
     };
 
     return function(obj, iteratee, memo, context) {
+      //if arguments are greater than three, an initial value has been providing, thereby setting var initial to true. When reducer is called, var initial is passed in as the 4th argument
       var initial = arguments.length >= 3;
       return reducer(obj, optimizeCb(iteratee, context, 4), memo, initial);
     };
@@ -1851,6 +1855,8 @@
 
   // Delegates to **ECMAScript 5**'s native `Object.keys`.
   _.keys = function(obj) {
+    //if not object, return empty array
+    //use cases: _.each, with empty array, obj/keys.length = 0 and so no for iteration occurs
     if (!_.isObject(obj)) return [];
     if (nativeKeys) return nativeKeys(obj);
     var keys = [];

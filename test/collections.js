@@ -1,4 +1,6 @@
 (function() {
+  //speculation: require('..') goes up one folder structure and allows underscore.js to be accessed
+  //unsure why we would need to require window._
   var _ = typeof require == 'function' ? require('..') : window._;
 
   QUnit.module('Collections');
@@ -18,6 +20,9 @@
 
     answers = [];
     var obj = {one: 1, two: 2, three: 3};
+    //returns a reference to the Object constuctor function that create the obj instance
+    // in this case answers.constructor === Object; => true
+    //appends four property/key to the prototype of obj
     obj.constructor.prototype.four = 4;
     _.each(obj, function(value, key){ answers.push(key); });
     assert.deepEqual(answers, ['one', 'two', 'three'], 'iterating over objects works, and ignores the object prototype.');
@@ -30,6 +35,8 @@
     _.each(obj, function(){ count++; });
     assert.strictEqual(count, 3, 'the fun should be called only 3 times');
 
+
+    //REQUIRES knowledge of _.include before understanding
     var answer = null;
     _.each([1, 2, 3], function(num, index, arr){ if (_.include(arr, num)) answer = true; });
     assert.ok(answer, 'can reference the original collection from inside the iterator');
@@ -37,17 +44,28 @@
     answers = 0;
     _.each(null, function(){ ++answers; });
     assert.strictEqual(answers, 0, 'handles a null properly');
-
+    //this appears to be an almost redundant test as false also gets converted to an array with zero length (so no for loop iteration occurs)
     _.each(false, function(){});
 
     var a = [1, 2, 3];
     assert.strictEqual(_.each(a, function(){}), a);
+    //this appears to be equivalent to _.each(null, function(){ ++answers; }); as so it is uncertain as to why this is being tested. This only difference is that the callback is empty, but this isn't relevant as the callback is never accessed (iteratee is never called in underscore.js: 319)
     assert.strictEqual(_.each(null, function(){}), null);
   });
 
   QUnit.test('forEach', function(assert) {
+    //where test parameters are function values
     assert.strictEqual(_.forEach, _.each, 'is an alias for each');
   });
+
+
+  //PROGRESSING BEYOND THIS POINT REQUIRES COVERAGE OF:
+  // .valueOf
+  // ._reduce
+  // _.reduceRight
+
+
+
 
   QUnit.test('lookupIterator with contexts', function(assert) {
     _.each([true, false, 'yes', '', 0, 1, {}], function(context) {
