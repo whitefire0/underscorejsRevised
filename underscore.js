@@ -17,7 +17,12 @@
  * When you see a function that is dependent on another functions, its probably because it uses this helper function in many over cases. Abstract it to that case alone - a helper function that has 10 different scenarios has 9 scenarios that are essentially dead at this point. Trust that you don't know them and you will encounter them sequentially through actual usage. If you don't use this process reading this level of approach is literally impossible.
  */
 
- // Number of 
+ // Concepts that need researching
+ /** js: 2445: if (typeof /./ != 'function' &&...  this isn't written anywhere else in the library, is it a reg exp?
+  * js 2056, predicate = cb(predicate, context); optimises callback cb itself uses multiple functions that need to be understood before 'optimises' can be understood.
+  * 
+ */
+
 
 (function() {
 
@@ -131,10 +136,13 @@
   var cb = function(value, context, argCount) {
     //if _.iteratee has been user modified, do something (reset to default?)
     if (_.iteratee !== builtinIteratee) return _.iteratee(value, context);
-    //where value is passed in function, if not call _.identity and return value
+    //error checking for null - if so return _.identity
     if (value == null) return _.identity;
+    //check if value _.isFunction, if so optimize the callback
     if (_.isFunction(value)) return optimizeCb(value, context, argCount);
+    //check if object and not array, if so call _.matcher
     if (_.isObject(value) && !_.isArray(value)) return _.matcher(value);
+    //if none of the above conditions are true, call _.property
     return _.property(value);
   };
 
@@ -185,8 +193,10 @@
   
   //nested function that allows both key and obj to be defined and processed
   //'key' is the method or property of the object that we want to return
+  //used by _.each/_.map/._reduce(?), length = getLength(collection)
+  //used by _.find, length = getLength(array)
   var shallowProperty = function(key) {
-    //we have to create function that passes in obj as otherwise obj is not defined
+    //shallowProperty has been stored in foo with key defined. obj remains undefined until foo(obj) is called (either with array-like or object)
     return function(obj) {
       //if obj is null return undefined, else return the object[key]
       //a true object does not have a length property and so returns undefined
@@ -234,10 +244,6 @@
   // =======================================================================
 
 
-
-
-
-
   // &*************************************&
   //       _.each
   // &*************************************&
@@ -271,33 +277,6 @@
     alert(element);
   }
 
-  /** Test data types 
-
-  _.simpleNumberArray = [1, 2, 3]
-  _.simpleStringArray = ['this', 'is', 'a', 'test'];
-  _.simpleNestedNumberArray = [[1], [2], [3]];
-  _.arrayWithObject = [1, 2, {simple: 'simples'}]
-  _.arrayOfFunctions = [function func1(){ return 'func1'}, function func2(){ return 'func2'}, function func3(){ return 'func3'}]
-  _.simpleObject = {simple: 'simples'};
-  _.tripleObject = {
-      USA: 'trumps',
-      UK: 'mays',
-      GER: 'gerks'
-  };
-  _.computerObject = {
-    components: {
-      peripherals: ['keyboard', 'mouse', 'printer', 'monitor'],
-      core: ['motherboard, cpu, gpu']
-    },
-    types: {
-      old: {nonWindows: 'atari', Windows: 'windows95'},
-      notOld: {nonWindows: 'iMac', Windows: 'windows Vista'},
-      worthBuying: {nonWindows: 'macbook', Windows: 'windows 10'}
-    }
-  }
-
-  */
-
   _.each = _.forEach = function(obj, iteratee, context) {
     //iteratee is bound to the context object if one is passed
     //iteratee now stores a function: interatee.apply(context, arguments)
@@ -307,7 +286,7 @@
     if (isArrayLike(obj)) {
       for (i = 0, length = obj.length; i < length; i++) {
         //each iteratee is clled with three arguments (element, index, list)
-        //when iteratee is now called we enter the local scope of optimizeCb (function(){return func.apply(context arguments)})
+        //when iteratee is now called we enter the local scope of optimizeCb (function(){return func.apply(context, arguments)}), or the preceeding function wrapper (e.g. _.negate js: 1712)
         iteratee(obj[i], i, obj);
       }
     } else {
@@ -381,20 +360,36 @@
   // Unfamiliar Concepts: (1) + recursion, # Helper Functions: (5),
 
   // Create a reducing function iterating left or right.
+                            //dir 1 = _.reduce, dir -1 = _.reduceRight
   var createReduce = function(dir) {
     // Wrap code that reassigns argument variables in a separate function than
     // the one that accesses `arguments.length` to avoid a perf hit. (#1991)
 
     // as reducer function is stored in a variable, when createReduce(dir) is called, it first executes line 404
     var reducer = function(obj, iteratee, memo, initial) {
+      //if array, isArrayLike(obj) returns true which is inversed to false, which means _.keys(obj) is never evaluated and keys is set to false
       var keys = !isArrayLike(obj) && _.keys(obj),
+        //if array then keys = false, and so length = obj.length
           length = (keys || obj).length,
+          //if dir > 0 (_.reduce) then index = 0, else index = length - 1 (last array index)
           index = dir > 0 ? 0 : length - 1;
+
+          //Use Case 1: if initial is false (no initial value provided) && obj is ARRAY then set memo to value of index (either the first or last array index depending on dir), and index++ (starting position for permutation) for _.reduce (shift right, as memo now containes value of original index position, and index-- for _.reduceRight (shift left as memo now contains value of last index position)
+          
+          //Use Case 2: if initial is false (no initial value provided) && obj is OBJECT then set memo to either the first or last key[index], and index++ (starting position for permutation) for _.reduce (shift right, as memo now contains value of initial index position, and index-- for _.reduceRight (shift left as memo now contains value of last index position)
+
+          //Use Case 3: if initial is true, then an initial state of the reduction has already been provided and we don't need do anything.
       if (!initial) {
         memo = obj[keys ? keys[index] : index];
         index += dir;
       }
+      //no variable initialised as none required
+      //whilst index >=) and index < length, either increment index by 1 or -1 depending on direction (THIS IS CLEVER)
+      //index += dir SAME AS index = index + dir
+
       for (; index >= 0 && index < length; index += dir) {
+        //if array, set currentKey to index
+        //if object, set currentKey to keys[index]
         var currentKey = keys ? keys[index] : index;
         memo = iteratee(memo, obj[currentKey], currentKey, obj);
       }
@@ -440,7 +435,9 @@
   
   _.find = _.detect = function(obj, predicate, context) {
     var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
+    //where key = the returned index position
     var key = keyFinder(obj, predicate, context);
+    //if key not undefined and key not -1, return obj[/** index position */]
     if (key !== void 0 && key !== -1) return obj[key];
   };
 
@@ -460,7 +457,10 @@
  
   _.filter = _.select = function(obj, predicate, context) {
     var results = [];
+    //optimise callback
     predicate = cb(predicate, context);
+    //call _.each for each array/object element
+    //on each element, execute predictate callback. If truth test passes, push this element into the results array
     _.each(obj, function(value, index, list) {
       if (predicate(value, index, list)) results.push(value);
     });
@@ -475,10 +475,19 @@
       Returns the values in list without the elements that the truth test (predicate) passes. The opposite of filter.
 
       var odds = _.reject([1, 2, 3, 4, 5, 6], function(num){ return num % 2 == 0; });
-      => [1, 3, 5]*/
+      => [1, 3, 5]
+      
+      STACKFLOW
+      _.reject takes initial user defined predicate, stores a wrapped and negated version of this function, passes this to _.filter which calls _.each on each element of the predicate (referred to under the name of iteratee) - when called the engine goes back to _.filter and invokes the negated predicate. If this returns true, the value is stored in a results array.
+
+      _.reject(obj, userPredicate, context) 
+      
+      */
 
   
   _.reject = function(obj, predicate, context) {
+
+    //optimise predicate callback, then call _.negate on what returns, then pass what returns as the modified callback for _.filter
     return _.filter(obj, _.negate(cb(predicate)), context);
   };
 
@@ -1243,11 +1252,15 @@
   /**Generator function to create the findIndex and findLastIndex functions.*/
 
   var createPredicateIndexFinder = function(dir) {
+    //where predicate = the callback function from _.find
     return function(array, predicate, context) {
       predicate = cb(predicate, context);
       var length = getLength(array);
+      //dir = 1 sets forward iteration, -1 sets reverse iteration
       var index = dir > 0 ? 0 : length - 1;
       for (; index >= 0 && index < length; index += dir) {
+          //predicate(value       , index, array)
+          //if predicate returns true (ie callback has returned true), the correlated index has been found, so return this index to _.find
         if (predicate(array[index], index, array)) return index;
       }
       return -1;
@@ -1702,10 +1715,13 @@
 
       var isFalsy = _.negate(Boolean);
       _.find([-2, -1, 0, 1, 2], isFalsy);
-      => 0 */
+      => 0 
+      
+      */
 
-  // Returns a negated version of the passed-in predicate.
+  // Returns a negated version of the passed-in predicate (ie, if predicate returns true, inverse to false)
   _.negate = function(predicate) {
+    //it returns a function wrapped .apply, so that the receiving function can apply the this/arguments at a later stage
     return function() {
       return !predicate.apply(this, arguments);
     };
@@ -2058,10 +2074,14 @@
 
   // Returns the first key on an object that passes a predicate test.
   _.findKey = function(obj, predicate, context) {
+    //optimise predicate
     predicate = cb(predicate, context);
+    //set keys to the key values of the object, and declare key but do not set value
     var keys = _.keys(obj), key;
     for (var i = 0, length = keys.length; i < length; i++) {
       key = keys[i];
+        //predicate(keyvalue, key, obj)
+        //if keyvalue satisfies callback return the key itself
       if (predicate(obj[key], key, obj)) return key;
     }
   };
@@ -2454,8 +2474,13 @@
   // Optimize `isFunction` if appropriate. Work around some typeof bugs in old v8,
   // IE 11 (#1621), Safari 8 (#1929), and PhantomJS (#2236).
   var nodelist = root.document && root.document.childNodes;
+  //typeof /./ != 'function': RegExp (The decimal point) matches any single character except the newline character. If typeof 'a' != function?! Must be some weird workaround 
   if (typeof /./ != 'function' && typeof Int8Array != 'object' && typeof nodelist != 'function') {
+    //if obj is a function then return true, else false
     _.isFunction = function(obj) {
+      //why the additional false statement? Shortly put, some platforms have a bug where typeof isn't a string unless you store it in a variable.
+      //The || false fixes the issue without introducing an extra variable.
+      //from https://stackoverflow.com/questions/38827169/underscore-js-why-does-isfunction-use-false
       return typeof obj == 'function' || false;
     };
   }
