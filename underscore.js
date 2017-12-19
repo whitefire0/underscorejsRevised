@@ -504,17 +504,21 @@
   
   _.every = _.all = function(obj, predicate, context) {
     predicate = cb(predicate, context);
+    //if not array like, assign object keys to keys
     var keys = !isArrayLike(obj) && _.keys(obj),
         length = (keys || obj).length;
     for (var index = 0; index < length; index++) {
+      //current key = object key index if object, or index if array-like
       var currentKey = keys ? keys[index] : index;
+      //run predicate callback, negate return value, if any returns NOT true, return false and exit function
       if (!predicate(obj[currentKey], currentKey, obj)) return false;
     }
+    //if no NOT true values are found, return true and exit function
     return true;
   };
 
   // &*************************************&
-  //     _.some
+  //     _.some (opposite of every)
   // &*************************************&
 
   /**_.some(list, [predicate], [context]) Alias: any 
@@ -529,8 +533,10 @@
         length = (keys || obj).length;
     for (var index = 0; index < length; index++) {
       var currentKey = keys ? keys[index] : index;
+      //run predicate callback. if any value returns true, then return true and exit function
       if (predicate(obj[currentKey], currentKey, obj)) return true;
     }
+    //if no values return true, return false and exit function
     return false;
   };
 
