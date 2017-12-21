@@ -20,7 +20,8 @@
  // Concepts that need researching
  /** js: 2445: if (typeof /./ != 'function' &&...  this isn't written anywhere else in the library, is it a reg exp?
   * js 2056, predicate = cb(predicate, context); optimises callback cb itself uses multiple functions that need to be understood before 'optimises' can be understood.
-  * 
+  * js: 1334: 'createIndexFinder - as of 19/12/2017 was almost completely indecipherable. Not sure on var idx default value as 0 (not passed in with example test parameters). Without knowing context of idx it is difficult/impossible to understand the conditionals within createIndexFinder.
+  * js: 552 (_.contains) is highly dependent on _.indexOf (js: 1335) and so is indecipherable without understanding its above helper function.
  */
 
 
@@ -262,20 +263,7 @@
   sparse array-likes as if they were dense.*/
 
   // Unfamiliar Concepts: (2 -iterating over keys, context), # Helper Functions: (4), # of Dependencies: ()
- 
-  /** Test Functions */
 
-  _.logThis = function logThis(element) {
-    console.log(element);
-  }
-
-  _.adder = function adder(a, b) {
-    return a + b;
-  }
-
-  _.alerts = function alert(element) {
-    alert(element);
-  }
 
   _.each = _.forEach = function(obj, iteratee, context) {
     //iteratee is bound to the context object if one is passed
@@ -556,6 +544,7 @@
   // Aliased as `includes` and `include`.
   _.contains = _.includes = _.include = function(obj, item, fromIndex, guard) {
     if (!isArrayLike(obj)) obj = _.values(obj);
+    //if fromIndex != 'number' ie 'undefined if not passed, OR guard is present, set fromIndex to 0
     if (typeof fromIndex != 'number' || guard) fromIndex = 0;
     return _.indexOf(obj, item, fromIndex) >= 0;
   };
@@ -1339,11 +1328,16 @@
 
   var createIndexFinder = function(dir, predicateFind, sortedIndex) {
     return function(array, item, idx) {
+      //js: 225  var getLength = shallowProperty('length');
       var i = 0, length = getLength(array);
       if (typeof idx == 'number') {
         if (dir > 0) {
+
+          //Math.max returns largest of passed in numbers
           i = idx >= 0 ? idx : Math.max(idx + length, i);
         } else {
+
+          ////Math.max returns smallest of passed in numbers
           length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
         }
       } else if (sortedIndex && idx && length) {
