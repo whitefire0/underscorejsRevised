@@ -36,12 +36,7 @@
     // &~~~~~~~~~~~~~~~~~~~~~&
 
     /**USES:
-       * _.iteratee
-       * _.isFunction
-       * _.isObject
-       * _.isArray
-       * _.matcher
-       * _.property
+       * ~None~
        */
   
       /**USED BY:
@@ -55,6 +50,15 @@
     // &~~~~~~~~~~~~~~~~~~~~~&
     //       cb
     // &~~~~~~~~~~~~~~~~~~~~~&
+
+    /**USES:
+       * _.iteratee
+       * _.isFunction
+       * _.isObject
+       * _.isArray
+       * _.matcher
+       * _.property
+       */
   
     // An internal function to generate callbacks that can be applied to each
     // element in a collection, returning the desired result — either `identity`,
@@ -85,6 +89,13 @@
     // &~~~~~~~~~~~~~~~~~~~~~&
   
     // An internal function for creating a new object that inherits from another.
+
+    /**USES:
+       * _.isObject
+       * nativeCreate
+       * new Ctor
+       */
+  
     
     // &~~~~~~~~~~~~~~~~~~~~~&
     //       shallowProperty
@@ -97,9 +108,11 @@
        * isArrayLike
        */
 
-       /**INDIRECTLY USED BY:
+       /**INDIRECTLY USED BY: (via isArrayLike)
        * _.each
        * _.map
+       * _.reduce & _.reduceRight
+       * _.find
        */
     
     // &~~~~~~~~~~~~~~~~~~~~~&
@@ -113,6 +126,9 @@
 
       /**USED BY:
        * _.each
+       * _.map
+       * _.reduce & _.reduceRight
+       * _.find
        */
    
   
@@ -179,6 +195,12 @@
   
         var sum = _.reduce([1, 2, 3], function(memo, num){ return memo + num; }, 0);
         => 6*/
+
+        /**USES:
+       * optimiseCb
+       * isArrayLike
+       * _.keys
+       */
   
     
   
@@ -209,6 +231,10 @@
         var even = _.find([1, 2, 3, 4, 5, 6], function(num){ return num % 2 == 0; });
         => 2*/
   
+      /**USES:
+     * isArrayLike
+     * _.keys
+     */
   
   
     // &*************************************&
