@@ -58,6 +58,9 @@
        * _.isArray
        * _.matcher
        * _.property
+       * 
+       * 
+       * "iteratee = cb(iteratee, context)"
        */
   
     // An internal function to generate callbacks that can be applied to each
@@ -247,6 +250,11 @@
   
         var evens = _.filter([1, 2, 3, 4, 5, 6], function(num){ return num % 2 == 0; });
         => [2, 4, 6] */
+
+        /**USES:
+         * cb
+         * _.keys
+         */
   
   
     // &*************************************&

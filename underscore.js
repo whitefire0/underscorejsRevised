@@ -22,7 +22,8 @@
   * js 2056, predicate = cb(predicate, context); optimises callback cb itself uses multiple functions that need to be understood before 'optimises' can be understood.
   * js: 1334: 'createIndexFinder - as of 19/12/2017 was almost completely indecipherable. Not sure on var idx default value as 0 (not passed in with example test parameters). Without knowing context of idx it is difficult/impossible to understand the conditionals within createIndexFinder.
   * js: 552 (_.contains) is highly dependent on _.indexOf (js: 1335) and so is indecipherable without understanding its above helper function.
- */
+  * js: 567 _.invoke. Calling this will pause debugger within invoke, with a call stack existing prior to it (js: 171, restArgs). restArgs is a stored function which returns another function, which itself calls the passed in func with a .call() method - _.invoke stores the restArgs function, passing in the object, path and extra arguments that were handed to _.invoke as the first restArgs parameter. I cannot find the second restArgs parameter 'startIndex', or where it gets its value from. It is not defined elsewhere in the code. Also, when _.invoke is initially called, its arguments get passed into the first argument of restArgs(function(obj, path, args), but I can't see where args is defined (seems to default to an array))
+ */ 
 
 
 (function() {
@@ -326,6 +327,7 @@
       var currentKey = keys ? keys[index] : index;
       //execute callback and store value in results array iteratively
       //if object, we are passing in value, currentKey and obj
+      //in the case of _.pluck, the iteratee is actually the inner function of shallowProperty, which takes only one argument (obj[currentKey]) and returns the previously defined key that we want to pluck (e.g 'name'). In this way, it returns the 'name' key value for each element within the array
       results[index] = iteratee(obj[currentKey], currentKey, obj);
     }
     return results;
@@ -565,20 +567,27 @@
   _.invoke = restArgs(function(obj, path, args) {
     var contextPath, func;
     if (_.isFunction(path)) {
+      //if the value of path is itself a function, set func to this directly
       func = path;
     } else if (_.isArray(path)) {
+      //if path is array, create a shallow copy of the array
       contextPath = path.slice(0, -1);
+      //re-set path to the last element of the array ?????
       path = path[path.length - 1];
     }
     return _.map(obj, function(context) {
+      //we call _.map(obj, iteratee) - where iteratee is the contained function below: it doesn't actually get exectuted until method.apply() (js: 589)
+      //where is func defined at this stage in the code?
       var method = func;
       if (!method) {
         if (contextPath && contextPath.length) {
           context = deepGet(context, contextPath);
         }
         if (context == null) return void 0;
+        //where context is an array, the backets notation accesses the native path e.g. array.prototype.sort and sets the method to this
         method = context[path];
       }
+      //then finally call this method with apply, passing in the current element(s) as the context (this is clever)
       return method == null ? method : method.apply(context, args);
     });
   });
@@ -598,14 +607,52 @@
 
   // Convenience version of a common use case of `map`: fetching a property.
   _.pluck = function(obj, key) {
+    //_.property(key) is invoked first to retrieve its return value. This return value becomes the second argument of map and is itself a function (the inner function of shallow property).
+    //_.map directly returns the new array of plucked key values, which is then directly returned by _.pluck
     return _.map(obj, _.property(key));
   };
+
+  // &*************************************&
+  //     _.where
+  // &*************************************&
+
+    /**Looks through each value in the list, returning an array of all the values that contain all of the key-value pairs listed in properties.
+
+  _.where(listOfPlays, {author: "Shakespeare", year: 1611});
+  => [{title: "Cymbeline", author: "Shakespeare", year: 1611},
+      {title: "The Tempest", author: "Shakespeare", year: 1611}] */
+
+    /** FOR TESTING _.where
+     * var listOfJobs = [
+    {title: 'Front End Dev', skills: 'javascript'},
+    {title: 'Back End Dev', skills: 'javascript'},
+    {title: 'Project Manager', skills: 'other skills'},
+    {title: 'Unicorn', skills: 'everything'},
+    {title: 'Start-up dev', skills: 'javascript'}
+  ]
+
+  _.where(listOfJobs, {skills: 'javascript'})
+     */
 
   // Convenience version of a common use case of `filter`: selecting only objects
   // containing specific `key:value` pairs.
   _.where = function(obj, attrs) {
     return _.filter(obj, _.matcher(attrs));
   };
+
+  // &*************************************&
+  //     _.findWhere
+  // &*************************************&
+
+  /**Looks through the list and returns the first value that matches all of the key-value pairs listed in properties.
+
+  If no match is found, or if list is empty, undefined will be returned.
+
+  _.findWhere(publicServicePulitzers, {newsroom: "The New York Times"});
+  => {year: 1918, newsroom: "The New York Times",
+    reason: "For its public service in publishing in full so many official reports,
+    documents and speeches by European statesmen relating to the progress and
+    conduct of the war."} */
 
   // Convenience version of a common use case of `find`: getting the first object
   // containing specific `key:value` pairs.
@@ -2679,8 +2726,15 @@
 
   _.noop = function(){};
 
+
+
+  // &*************************************&
+  //     _.property
+  // &*************************************&
+
   _.property = function(path) {
     if (!_.isArray(path)) {
+      //another use case of shallowProperty. On this occasion we call it with path (case 1: the object key name from ._pluck), and return the inner function which, when called again with it's next required parameter (obj), determines whether or not the previously given path can be accessed within the object (obj).
       return shallowProperty(path);
     }
     return function(obj) {
