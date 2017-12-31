@@ -36,7 +36,7 @@
     assert.strictEqual(count, 3, 'the fun should be called only 3 times');
 
 
-    //REQUIRES knowledge of _.include before understanding
+    //REQUIRES knowledge of _.include (alias for _.contains) before understanding
     var answer = null;
     _.each([1, 2, 3], function(num, index, arr){ if (_.include(arr, num)) answer = true; });
     assert.ok(answer, 'can reference the original collection from inside the iterator');

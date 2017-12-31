@@ -2762,6 +2762,7 @@
   // Returns a predicate for checking whether an object has a given set of
   // `key:value` pairs.
   _.matcher = _.matches = function(attrs) {
+    //_.extendOwn is generated at the time of calling by createAssigner (js: 2032), which itself takes _.keys as a parameter "createAssigner = function(keysFunc,..."
     attrs = _.extendOwn({}, attrs);
     return function(obj) {
       return _.isMatch(obj, attrs);
